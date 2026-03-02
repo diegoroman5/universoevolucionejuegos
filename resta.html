@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resta - Cálculo Mental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue-deep: #0a1f5c;
+            --blue-btn: #1e3fc0;
+            --blue-btn-h: #2a52e8;
+            --gold-light: #ffd966;
+            --gold-dark: #f5a623;
+            --red: #e53935;
+            --green: #43a047;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: radial-gradient(ellipse at 50% 0%, #2255d4 0%, #0a1f5c 60%, #060f2e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #fff
+        }
+
+        .stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .7);
+            animation: twinkle var(--d, 3s) ease-in-out infinite alternate
+        }
+
+        @keyframes twinkle {
+            from {
+                opacity: .15
+            }
+
+            to {
+                opacity: .9
+            }
+        }
+
+        .screen {
+            display: none;
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center
+        }
+
+        #screen-intro {
+            gap: 28px;
+            text-align: center;
+            animation: fadeIn .5s ease
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .game-title {
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffd966, #fff, #ffd966);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 12px rgba(255, 180, 0, .4))
+        }
+
+        .game-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, .75);
+            max-width: 480px;
+            line-height: 1.6
+        }
+
+        .config-card {
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 24px;
+            padding: 28px 36px;
+            width: 100%;
+            max-width: 480px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 22px
+        }
+
+        .config-label {
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #ffd966;
+            margin-bottom: 10px
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px
+        }
+
+        .radio-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, .2);
+            background: transparent;
+            color: rgba(255, 255, 255, .7);
+            font-family: 'Nunito', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center
+        }
+
+        .radio-btn.selected {
+            border-color: #ffd966;
+            background: rgba(255, 217, 102, .15);
+            color: #ffd966;
+            box-shadow: 0 0 16px rgba(255, 217, 102, .25)
+        }
+
+        .radio-btn:hover:not(.selected) {
+            border-color: rgba(255, 255, 255, .5);
+            color: #fff
+        }
+
+        .start-btn {
+            padding: 18px 48px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ffd966, #f5a623);
+            color: #0a1f5c;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(245, 166, 35, .5);
+            transition: transform .15s, box-shadow .15s;
+            letter-spacing: .5px
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(245, 166, 35, .6)
+        }
+
+        #screen-countdown {
+            align-items: center;
+            justify-content: center;
+            gap: 16px
+        }
+
+        .countdown-num {
+            font-size: clamp(8rem, 20vw, 14rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffd966, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: popIn .4s cubic-bezier(.34, 1.56, .64, 1)
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(.3);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .countdown-label {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, .7);
+            letter-spacing: 3px;
+            text-transform: uppercase
+        }
+
+        #screen-game {
+            gap: 20px
+        }
+
+        .hud {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px
+        }
+
+        .hud-home {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, .12);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s
+        }
+
+        .hud-home:hover {
+            background: rgba(255, 255, 255, .22)
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 28px;
+            align-items: center
+        }
+
+        .hud-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px
+        }
+
+        .hud-icon {
+            font-size: 1rem;
+            opacity: .8
+        }
+
+        .hud-val {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #ffd966;
+            min-width: 40px;
+            text-align: center
+        }
+
+        .timer-bar-wrap {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, .15);
+            border-radius: 99px;
+            overflow: hidden
+        }
+
+        .timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd966, #f5a623);
+            border-radius: 99px;
+            transition: width .5s linear, background .5s
+        }
+
+        .timer-bar-fill.urgent {
+            background: linear-gradient(90deg, #ff5252, #ff1744)
+        }
+
+        .eq-card {
+            width: 100%;
+            background: linear-gradient(135deg, #ffd966 0%, #ffb300 60%, #f5a623 100%);
+            border-radius: 20px;
+            padding: clamp(18px, 4vw, 32px) clamp(20px, 5vw, 40px);
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(245, 166, 35, .45), inset 0 1px 0 rgba(255, 255, 255, .4);
+            position: relative;
+            overflow: hidden
+        }
+
+        .eq-card::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -10%;
+            width: 50%;
+            height: 160%;
+            background: rgba(255, 255, 255, .12);
+            transform: rotate(20deg);
+            pointer-events: none
+        }
+
+        .eq-text {
+            font-size: clamp(2.8rem, 9vw, 5.5rem);
+            font-weight: 900;
+            color: #0a1f5c;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+            position: relative
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            width: 100%
+        }
+
+        @media(max-width:520px) {
+            .answers-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .ans-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 14px 8px 18px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, .15);
+            background: #1e3fc0;
+            color: #fff;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            transition: transform .12s, background .12s, border-color .12s, box-shadow .12s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+            position: relative;
+            overflow: hidden
+        }
+
+        .ans-btn:hover {
+            background: #2a52e8;
+            border-color: rgba(255, 255, 255, .35);
+            transform: translateY(-2px)
+        }
+
+        .ans-btn.focused {
+            border-color: #ffd966;
+            box-shadow: 0 0 20px rgba(255, 217, 102, .4);
+            background: #2a52e8
+        }
+
+        .ans-btn.correct {
+            background: #43a047 !important;
+            border-color: #81c784 !important;
+            animation: correctFlash .4s ease
+        }
+
+        .ans-btn.wrong {
+            background: #e53935 !important;
+            border-color: #ef9a9a !important;
+            animation: wrongShake .4s ease
+        }
+
+        @keyframes correctFlash {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.08)
+            }
+        }
+
+        @keyframes wrongShake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-6px)
+            }
+
+            75% {
+                transform: translateX(6px)
+            }
+        }
+
+        .ans-arrow {
+            font-size: 1.1rem;
+            opacity: .7
+        }
+
+        .ans-num {
+            font-size: clamp(1.6rem, 5vw, 2.5rem);
+            font-weight: 900;
+            line-height: 1
+        }
+
+        .key-hint {
+            font-size: .72rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .45);
+            text-align: center
+        }
+
+        #screen-results {
+            gap: 24px;
+            animation: fadeIn .5s ease;
+            text-align: center
+        }
+
+        .results-title {
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffd966, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .results-card {
+            background: rgba(255, 255, 255, .09);
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 24px;
+            padding: 28px 36px;
+            width: 100%;
+            max-width: 460px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px
+        }
+
+        .res-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px
+        }
+
+        .res-icon {
+            font-size: 1.6rem
+        }
+
+        .res-val {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffd966
+        }
+
+        .res-label {
+            font-size: .75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .6)
+        }
+
+        .acc-bar-wrap {
+            width: 100%;
+            max-width: 460px;
+            height: 12px;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 99px;
+            overflow: hidden
+        }
+
+        .acc-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1s ease
+        }
+
+        .record-badge {
+            background: linear-gradient(135deg, #ffd966, #f5a623);
+            color: #0a1f5c;
+            font-weight: 900;
+            font-size: .9rem;
+            letter-spacing: 1px;
+            padding: 6px 18px;
+            border-radius: 99px;
+            display: none
+        }
+
+        .record-badge.show {
+            display: inline-block
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 14px
+        }
+
+        .btn-outline {
+            padding: 14px 28px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-radius: 14px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .btn-outline:hover {
+            border-color: #fff;
+            background: rgba(255, 255, 255, .1)
+        }
+
+        #mute-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .25);
+            background: rgba(10, 31, 92, .6);
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s
+        }
+
+        #mute-btn:hover {
+            background: rgba(10, 31, 92, .9)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stars" id="stars"></div>
+    <button id="mute-btn" title="Silenciar">🔊</button>
+    <a href="index.html"
+        style="position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 700; font-family: 'Nunito', sans-serif; transition: color 0.2s; z-index: 100;"
+        onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">← Volver al
+        Arcade</a>
+
+    <div class="screen active" id="screen-intro">
+        <div class="game-title">Resta</div>
+        <div class="game-subtitle">Calcula la expresión y selecciona la respuesta correcta.<br>Puedes usar el mouse,
+            teclado o gamepad.</div>
+        <div class="config-card">
+            <div>
+                <div class="config-label">Dificultad</div>
+                <div class="radio-group" id="diff-group">
+                    <button class="radio-btn" data-val="facil">Fácil</button>
+                    <button class="radio-btn selected" data-val="promedio">Promedio</button>
+                    <button class="radio-btn" data-val="pesado">Pesado</button>
+                </div>
+            </div>
+            <div>
+                <div class="config-label">Duración (minutos)</div>
+                <div class="radio-group" id="dur-group">
+                    <button class="radio-btn selected" data-val="1">1 min</button>
+                    <button class="radio-btn" data-val="2">2 min</button>
+                    <button class="radio-btn" data-val="3">3 min</button>
+                </div>
+            </div>
+            <button class="start-btn" id="start-btn">¡Jugar! 🚀</button>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-countdown">
+        <div class="countdown-label">Prepárate</div>
+        <div class="countdown-num" id="cd-num">3</div>
+    </div>
+
+    <div class="screen" id="screen-game">
+        <div class="hud">
+            <button class="hud-home" id="home-btn">🏠</button>
+            <div class="hud-stats">
+                <div class="hud-stat"><span class="hud-icon">⏱️</span><span class="hud-val" id="hud-time">60</span>
+                </div>
+                <div class="hud-stat"><span class="hud-icon">⭐</span><span class="hud-val" id="hud-score">0</span></div>
+                <div class="hud-stat"><span class="hud-icon">🏋️</span><span class="hud-val" id="hud-level">1</span>
+                </div>
+            </div>
+        </div>
+        <div class="timer-bar-wrap">
+            <div class="timer-bar-fill" id="timer-bar" style="width:100%"></div>
+        </div>
+        <div class="eq-card">
+            <div class="eq-text" id="eq-text">...</div>
+        </div>
+        <div class="answers-grid" id="answers-grid">
+            <button class="ans-btn" id="btn0"><span class="ans-arrow">◄</span><span class="ans-num">0</span></button>
+            <button class="ans-btn" id="btn1"><span class="ans-arrow">▲</span><span class="ans-num">0</span></button>
+            <button class="ans-btn" id="btn2"><span class="ans-arrow">►</span><span class="ans-num">0</span></button>
+            <button class="ans-btn" id="btn3"><span class="ans-arrow">▼</span><span class="ans-num">0</span></button>
+        </div>
+        <div class="key-hint">Flechas del teclado · Enter para confirmar</div>
+    </div>
+
+    <div class="screen" id="screen-results">
+        <div class="results-title">¡Resultado!</div>
+        <div class="record-badge" id="record-badge">🏆 Nuevo Récord</div>
+        <div class="results-card">
+            <div class="res-item"><span class="res-icon">⭐</span><span class="res-val" id="res-score">0</span><span
+                    class="res-label">Puntos</span></div>
+            <div class="res-item"><span class="res-icon">✅</span><span class="res-val" id="res-correct">0</span><span
+                    class="res-label">Correctas</span></div>
+            <div class="res-item"><span class="res-icon">📋</span><span class="res-val" id="res-total">0</span><span
+                    class="res-label">Total</span></div>
+            <div class="res-item"><span class="res-icon">🎯</span><span class="res-val" id="res-acc">0%</span><span
+                    class="res-label">Precisión</span></div>
+        </div>
+        <div class="acc-bar-wrap">
+            <div class="acc-bar-fill" id="acc-bar" style="width:0%;background:#43a047"></div>
+        </div>
+        <div class="btn-row">
+            <button class="btn-outline" id="replay-btn">🔄 Repetir</button>
+            <button class="btn-outline" id="menu-btn">🏠 Menú</button>
+        </div>
+    </div>
+
+    <script>
+        // Stars
+        (function () { const w = document.getElementById('stars'); for (let i = 0; i < 60; i++) { const s = document.createElement('div'); s.className = 'star'; const z = Math.random() * 2.5 + .5; s.style.cssText = `width:${z}px;height:${z}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;--d:${(Math.random() * 3 + 2).toFixed(1)}s;animation-delay:${(Math.random() * 4).toFixed(1)}s;`; w.appendChild(s); } })();
+
+        // ── Audio ──
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let actx = null, masterGain = null, muted = false, musicRunning = false, musicLoopTimeout = null;
+        function initAudio() { if (actx) return; actx = new AudioCtx(); masterGain = actx.createGain(); masterGain.gain.value = 0.35; masterGain.connect(actx.destination); }
+        function resumeAudio() { if (actx && actx.state === 'suspended') actx.resume(); }
+
+        function tone(freq, type = 'sine', vol = 0.3, dur = 0.15, delay = 0) {
+            if (!actx || muted) return;
+            const o = actx.createOscillator(), g = actx.createGain();
+            o.type = type; o.frequency.value = freq;
+            const t = actx.currentTime + delay;
+            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + dur + 0.02);
+        }
+
+        function sfxCorrect() { tone(523, 'sine', .3, .1); tone(659, 'sine', .3, .12, .08); tone(784, 'sine', .3, .15, .16); }
+        function sfxWrong() { tone(220, 'sawtooth', .25, .18); tone(160, 'sawtooth', .2, .2, .1); }
+        function sfxCD() { tone(660, 'sine', .35, .15); }
+        function sfxGo() { tone(523, 'sine', .3, .1); tone(659, 'sine', .3, .1, .1); tone(784, 'sine', .4, .2, .2); }
+        function sfxOver() { tone(392, 'sine', .3, .15); tone(349, 'sine', .3, .15, .15); tone(294, 'sine', .4, .3, .3); }
+
+        // ── Procedural music — resta edition ──
+        // BPM 118, slightly moodier minor-ish feel (A minor / C major)
+        // Melody uses descending motif to match "subtraction" theme
+        const BPM = 118, BEAT = 60 / BPM;
+        const SCALE_MAJ = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // C D E F G A B C5
+        const SCALE_MIN = [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00]; // A B C D E F G A5
+
+        // Melody: descending, energetic, minor feel
+        const MEL = [
+            // bar 1-2: descending A minor motif
+            { s: 0, n: 7, sc: 1, l: .5 }, { s: .5, n: 5, sc: 1, l: .25 }, { s: 1, n: 4, sc: 1, l: .5 }, { s: 1.5, n: 2, sc: 1, l: .25 },
+            { s: 2, n: 0, sc: 1, l: .75 }, { s: 2.75, n: 2, sc: 1, l: .25 }, { s: 3, n: 4, sc: 1, l: 1 },
+            // bar 3-4
+            { s: 4, n: 5, sc: 1, l: .5 }, { s: 4.5, n: 4, sc: 1, l: .25 }, { s: 5, n: 2, sc: 1, l: .5 }, { s: 5.5, n: 0, sc: 1, l: .25 },
+            { s: 6, n: 6, sc: 0, l: .5 }, { s: 6.5, n: 4, sc: 0, l: .5 }, { s: 7, n: 5, sc: 0, l: 1 },
+            // bar 5-6: rising answer
+            { s: 8, n: 0, sc: 1, l: .5 }, { s: 8.5, n: 2, sc: 1, l: .25 }, { s: 9, n: 4, sc: 1, l: .5 }, { s: 9.5, n: 5, sc: 1, l: .25 },
+            { s: 10, n: 7, sc: 1, l: .75 }, { s: 10.75, n: 5, sc: 1, l: .25 }, { s: 11, n: 4, sc: 1, l: .5 }, { s: 11.5, n: 2, sc: 1, l: .5 },
+            // bar 7-8: resolve
+            { s: 12, n: 6, sc: 0, l: .5 }, { s: 12.5, n: 4, sc: 0, l: .5 }, { s: 13, n: 2, sc: 0, l: .5 }, { s: 13.5, n: 0, sc: 0, l: .5 },
+            { s: 14, n: 4, sc: 1, l: .5 }, { s: 14.5, n: 2, sc: 1, l: .25 }, { s: 15, n: 0, sc: 1, l: 1 },
+        ];
+
+        // Bass: Am - G - F - E (classic minor progression)
+        const BASS = [
+            { s: 0, f: 55.00, l: .4 }, { s: .5, f: 55.00, l: .2 }, { s: 1, f: 55.00, l: .4 }, { s: 2, f: 55.00, l: .4 }, { s: 2.5, f: 55.00, l: .2 }, { s: 3, f: 55.00, l: .4 },
+            { s: 4, f: 49.00, l: .4 }, { s: 4.5, f: 49.00, l: .2 }, { s: 5, f: 49.00, l: .4 }, { s: 6, f: 49.00, l: .4 }, { s: 6.5, f: 49.00, l: .2 }, { s: 7, f: 49.00, l: .4 },
+            { s: 8, f: 43.65, l: .4 }, { s: 8.5, f: 43.65, l: .2 }, { s: 9, f: 43.65, l: .4 }, { s: 10, f: 43.65, l: .4 }, { s: 10.5, f: 43.65, l: .2 }, { s: 11, f: 43.65, l: .4 },
+            { s: 12, f: 41.20, l: .4 }, { s: 12.5, f: 41.20, l: .2 }, { s: 13, f: 41.20, l: .4 }, { s: 14, f: 41.20, l: .4 }, { s: 14.5, f: 41.20, l: .2 }, { s: 15, f: 41.20, l: .4 },
+        ];
+
+        // Kick on beats 1&3, snare accent on beat 3
+        const KICKS = [0, 2, 4, 6, 8, 10, 12, 14];
+        const SNARE = [2, 6, 10, 14];
+        const HH = [0, .5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5];
+
+        function sched(freq, type, vol, start, dur) {
+            if (!actx || muted) return;
+            const o = actx.createOscillator(), g = actx.createGain();
+            o.type = type; o.frequency.value = freq;
+            g.gain.setValueAtTime(0, start); g.gain.linearRampToValueAtTime(vol, start + 0.01); g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+            o.connect(g); g.connect(masterGain); o.start(start); o.stop(start + dur + 0.02);
+        }
+
+        function kick(t) {
+            if (!actx || muted) return;
+            const o = actx.createOscillator(), g = actx.createGain();
+            o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.4, t + .005); g.gain.exponentialRampToValueAtTime(.001, t + .35);
+            o.connect(g); g.connect(masterGain); o.start(t); o.stop(t + .4);
+        }
+
+        function snare(t) {
+            if (!actx || muted) return;
+            const buf = actx.createBuffer(1, actx.sampleRate * .2, actx.sampleRate);
+            const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = Math.random() * 2 - 1;
+            const src = actx.createBufferSource(); src.buffer = buf;
+            const f = actx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1200; f.Q.value = 0.5;
+            const g = actx.createGain();
+            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + .003); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+            src.connect(f); f.connect(g); g.connect(masterGain); src.start(t); src.stop(t + .25);
+        }
+
+        function hihat(t) {
+            if (!actx || muted) return;
+            const buf = actx.createBuffer(1, actx.sampleRate * .05, actx.sampleRate);
+            const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = Math.random() * 2 - 1;
+            const src = actx.createBufferSource(); src.buffer = buf;
+            const f = actx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+            const g = actx.createGain();
+            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.06, t + .002); g.gain.exponentialRampToValueAtTime(.001, t + .05);
+            src.connect(f); f.connect(g); g.connect(masterGain); src.start(t); src.stop(t + .06);
+        }
+
+        function schedBar(bs) {
+            if (!musicRunning) return;
+            const L = BEAT * 16;
+            MEL.forEach(n => {
+                const sc = n.sc === 1 ? SCALE_MIN : SCALE_MAJ;
+                sched(sc[n.n] * 2, 'triangle', .07, bs + n.s * BEAT, n.l * BEAT * .8);
+            });
+            BASS.forEach(n => sched(n.f, 'sawtooth', .14, bs + n.s * BEAT, n.l * BEAT));
+            KICKS.forEach(s => kick(bs + s * BEAT));
+            SNARE.forEach(s => snare(bs + s * BEAT));
+            HH.forEach(s => hihat(bs + s * BEAT));
+            musicLoopTimeout = setTimeout(() => schedBar(bs + L), (L - .2) * 1000);
+        }
+
+        function startMusic() { if (musicRunning) return; initAudio(); resumeAudio(); musicRunning = true; schedBar(actx.currentTime + .1); }
+        function stopMusic() { musicRunning = false; if (musicLoopTimeout) { clearTimeout(musicLoopTimeout); musicLoopTimeout = null; } }
+
+        document.getElementById('mute-btn').addEventListener('click', () => {
+            initAudio(); muted = !muted; masterGain.gain.value = muted ? 0 : .35;
+            document.getElementById('mute-btn').textContent = muted ? '🔇' : '🔊';
+        });
+
+        // ── Game Logic ──
+        let config = { diff: 'promedio', dur: 1 };
+        let state = {};
+        let timerInterval = null;
+        let focusedBtn = -1;
+        let blocked = false;
+        let highScore = parseInt(localStorage.getItem('resta_hs') || '0');
+
+        const DIFFS = {
+            facil: { terms: 2, maxTerms: 3, baseMax: 30, minResult: 1, levelUp: 5 },
+            promedio: { terms: 2, maxTerms: 3, baseMax: 70, minResult: 1, levelUp: 4 },
+            pesado: { terms: 3, maxTerms: 4, baseMax: 99, minResult: 0, levelUp: 3 },
+        };
+
+        function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+        function genQuestion(level) {
+            const p = DIFFS[config.diff];
+            const nt = Math.min(p.terms + Math.floor(level / p.levelUp), p.maxTerms);
+            const mx = Math.min(p.baseMax + level * 3, 99);
+
+            // Generate terms ensuring result >= minResult
+            // Strategy: pick first (largest), then pick subtracted terms that sum to less than first
+            let terms, correct;
+            let attempts = 0;
+            do {
+                terms = [];
+                const first = randInt(Math.floor(mx * 0.4), mx);
+                terms.push(first);
+                let remaining = first;
+                for (let i = 1; i < nt; i++) {
+                    const maxSub = Math.max(1, remaining - (nt - i) * p.minResult - 1);
+                    if (maxSub < 1) { terms.push(1); remaining -= 1; }
+                    else { const sub = randInt(1, maxSub); terms.push(sub); remaining -= sub; }
+                }
+                correct = terms[0]; for (let i = 1; i < terms.length; i++)correct -= terms[i];
+                attempts++;
+            } while (correct < p.minResult && attempts < 20);
+
+            const eq = terms[0] + terms.slice(1).map(t => ` − ${t}`).join('');
+            return { eq, correct };
+        }
+
+        function genAnswers(correct) {
+            const offs = [-10, 10, -1, 1, -11, 11, -9, 9, -5, 5, -3, 3].sort(() => Math.random() - .5);
+            const wrong = new Set();
+            for (const o of offs) { const v = correct + o; if (v >= 0 && v !== correct) { wrong.add(v); if (wrong.size === 3) break; } }
+            while (wrong.size < 3) { const r = correct + randInt(-15, 15); if (r >= 0 && r !== correct) wrong.add(r); }
+            return [correct, ...[...wrong].slice(0, 3)].sort(() => Math.random() - .5);
+        }
+
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+        document.querySelectorAll('#diff-group .radio-btn').forEach(b => b.addEventListener('click', () => {
+            document.querySelectorAll('#diff-group .radio-btn').forEach(x => x.classList.remove('selected'));
+            b.classList.add('selected'); config.diff = b.dataset.val;
+        }));
+        document.querySelectorAll('#dur-group .radio-btn').forEach(b => b.addEventListener('click', () => {
+            document.querySelectorAll('#dur-group .radio-btn').forEach(x => x.classList.remove('selected'));
+            b.classList.add('selected'); config.dur = parseInt(b.dataset.val);
+        }));
+
+        document.getElementById('start-btn').addEventListener('click', () => { initAudio(); resumeAudio(); startCD(); });
+
+        function startCD() {
+            showScreen('screen-countdown');
+            let n = 3; const el = document.getElementById('cd-num');
+            el.textContent = n; sfxCD();
+            const iv = setInterval(() => {
+                n--;
+                if (n > 0) { el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; el.textContent = n; sfxCD(); }
+                else { clearInterval(iv); el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; el.textContent = '¡Ya!'; sfxGo(); setTimeout(startGame, 600); }
+            }, 900);
+        }
+
+        function startGame() {
+            stopMusic();
+            state = { score: 0, correct: 0, total: 0, level: 1, streak: 0, timeLeft: config.dur * 60, totalTime: config.dur * 60 };
+            blocked = false; focusedBtn = -1;
+            showScreen('screen-game');
+            updateHUD(); newQuestion(); startTimer(); startMusic();
+        }
+
+        function newQuestion() {
+            const q = genQuestion(state.level);
+            const answers = genAnswers(q.correct);
+            state.correctAnswer = q.correct; state.answers = answers; state.correctIdx = answers.indexOf(q.correct);
+            document.getElementById('eq-text').textContent = q.eq;
+            const arrows = ['◄', '▲', '►', '▼'];
+            for (let i = 0; i < 4; i++) {
+                const b = document.getElementById('btn' + i);
+                b.querySelector('.ans-arrow').textContent = arrows[i];
+                b.querySelector('.ans-num').textContent = answers[i];
+                b.className = 'ans-btn';
+            }
+            blocked = false; focusedBtn = -1;
+        }
+
+        function answerSelected(idx) {
+            if (blocked) return; blocked = true; state.total++;
+            const b = document.getElementById('btn' + idx);
+            if (idx === state.correctIdx) {
+                b.classList.add('correct'); state.correct++; state.streak++;
+                const bonus = state.streak >= 3 ? 2 : 1;
+                state.score += 10 * bonus * Math.ceil(state.level / 3 + 1);
+                if (state.streak % 3 === 0) state.level++;
+                sfxCorrect();
+            } else {
+                b.classList.add('wrong');
+                document.getElementById('btn' + state.correctIdx).classList.add('correct');
+                state.streak = 0; sfxWrong();
+            }
+            updateHUD();
+            setTimeout(() => { if (timerInterval !== null) newQuestion(); }, 600);
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-time').textContent = state.timeLeft;
+            document.getElementById('hud-score').textContent = state.score;
+            document.getElementById('hud-level').textContent = state.level;
+            const pct = state.timeLeft / state.totalTime * 100;
+            const bar = document.getElementById('timer-bar');
+            bar.style.width = pct + '%'; bar.classList.toggle('urgent', pct < 20);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                state.timeLeft--; updateHUD();
+                if (state.timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; endGame(); }
+            }, 1000);
+        }
+
+        function endGame() {
+            blocked = true; stopMusic(); sfxOver();
+            const isRec = state.score > highScore;
+            if (isRec) { highScore = state.score; localStorage.setItem('resta_hs', highScore); }
+            setTimeout(() => showResults(isRec), 400);
+        }
+
+        function showResults(isRec) {
+            const acc = state.total > 0 ? Math.round(state.correct / state.total * 100) : 0;
+            document.getElementById('res-score').textContent = state.score;
+            document.getElementById('res-correct').textContent = state.correct;
+            document.getElementById('res-total').textContent = state.total;
+            document.getElementById('res-acc').textContent = acc + '%';
+            document.getElementById('record-badge').classList.toggle('show', isRec);
+            const bar = document.getElementById('acc-bar');
+            bar.style.width = '0%';
+            bar.style.background = acc >= 80 ? '#43a047' : acc >= 50 ? '#fb8c00' : '#e53935';
+            setTimeout(() => { bar.style.width = acc + '%'; }, 100);
+            showScreen('screen-results');
+        }
+
+        const KEY_MAP = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2, ArrowDown: 3, a: 0, w: 1, d: 2, s: 3, '1': 0, '2': 1, '3': 2, '4': 3 };
+        document.addEventListener('keydown', e => {
+            if (!document.getElementById('screen-game').classList.contains('active')) return;
+            if (blocked) return;
+            const t = KEY_MAP[e.key];
+            if (t !== undefined) { e.preventDefault(); answerSelected(t); }
+            if (e.key === 'Enter' && focusedBtn >= 0) { e.preventDefault(); answerSelected(focusedBtn); }
+        });
+
+        for (let i = 0; i < 4; i++)document.getElementById('btn' + i).addEventListener('click', () => answerSelected(i));
+
+        document.getElementById('home-btn').addEventListener('click', () => { clearInterval(timerInterval); timerInterval = null; stopMusic(); showScreen('screen-intro'); });
+        document.getElementById('replay-btn').addEventListener('click', () => { initAudio(); resumeAudio(); startCD(); });
+        document.getElementById('menu-btn').addEventListener('click', () => showScreen('screen-intro'));
+    </script>
+</body>
+
+</html>

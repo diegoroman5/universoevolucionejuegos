@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universo Evolucione | Juegos Web</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #060913;
+            --bg-grad-1: #0a1f5c;
+            --bg-grad-2: #060f2e;
+            --accent-1: #00f0ff;
+            --accent-2: #ff007f;
+            --accent-3: #7000ff;
+            --gold: #f5a623;
+            --text-main: #ffffff;
+            --text-muted: #a8c8ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(ellipse at 50% 0%, #153185 0%, var(--bg-grad-1) 50%, var(--bg-grad-2) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Stars Background */
+        .stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Shooting Stars SVG canvas */
+        #shooting-stars-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: twinkle var(--d, 3s) ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from {
+                opacity: 0.1;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Ensure content stays above stars */
+        header,
+        .hero,
+        .games-container,
+        footer {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Navbar */
+        header {
+            width: 100%;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(6, 9, 19, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            animation: float-icon 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+        }
+
+        @keyframes float-icon {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #fff, var(--accent-1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .game-count {
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--accent-1);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 70px 40px 50px;
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+        }
+
+        .hero-content {
+            text-align: center;
+            flex: 1;
+            max-width: 700px;
+            position: relative;
+        }
+
+        /* Planet decoration in hero */
+        .hero-planet {
+            position: absolute;
+            top: -30px;
+            right: -20px;
+            width: 90px;
+            opacity: 0.92;
+            filter: drop-shadow(0 10px 30px rgba(112, 0, 255, 0.4));
+            animation: float-planet 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes float-planet {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg);
+            }
+
+            50% {
+                transform: translateY(-18px) rotate(5deg);
+            }
+        }
+
+        /* Astronaut right side */
+        .hero-astronaut {
+            flex-shrink: 0;
+            width: 320px;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+            animation: float-astro 5s ease-in-out infinite;
+            pointer-events: none;
+            margin-left: -20px;
+        }
+
+        @keyframes float-astro {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-2deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(2deg);
+            }
+        }
+
+        /* UFO floating decoration */
+        .deco-ufo {
+            position: fixed;
+            top: 90px;
+            right: 40px;
+            width: 110px;
+            opacity: 0.85;
+            filter: drop-shadow(0 8px 24px rgba(0, 240, 255, 0.35));
+            animation: float-ufo 7s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes float-ufo {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-4deg);
+            }
+
+            30% {
+                transform: translateY(-14px) rotate(3deg);
+            }
+
+            70% {
+                transform: translateY(-8px) rotate(-2deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                flex-direction: column;
+                padding: 60px 20px 30px;
+            }
+
+            .hero-astronaut {
+                width: 220px;
+                margin-left: 0;
+                margin-top: -10px;
+            }
+
+            .deco-ufo {
+                width: 70px;
+                top: 70px;
+                right: 12px;
+            }
+
+            .hero-planet {
+                width: 60px;
+                top: -15px;
+                right: -10px;
+            }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.5), 0 5px 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            animation: pulse-text 3s infinite alternate;
+        }
+
+        @keyframes pulse-text {
+            0% {
+                filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.4));
+            }
+
+            100% {
+                filter: drop-shadow(0 0 25px rgba(255, 0, 127, 0.6));
+            }
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Games Grid */
+        .games-container {
+            width: 100%;
+            max-width: 1250px;
+            padding: 0 20px 80px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 35px;
+        }
+
+        .game-card {
+            background: rgba(16, 25, 50, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.6;
+            transition: opacity 0.4s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            box-shadow: 0 30px 60px rgba(0, 240, 255, 0.2), 0 0 30px rgba(0, 240, 255, 0.1);
+            background: rgba(26, 42, 80, 0.6);
+            border-color: rgba(0, 240, 255, 0.4);
+            z-index: 2;
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+            background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-3) 100%);
+        }
+
+        .game-banner {
+            width: 100%;
+            height: 190px;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inner 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Inner glow for banners */
+        .game-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Abstract shapes */
+        .abstract-shape {
+            z-index: 0;
+        }
+
+        .game-card:hover .abstract-shape {
+            transform: scale(1.15) rotate(8deg);
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.6)) brightness(1.2) !important;
+        }
+
+        .game-info {
+            padding: 24px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            z-index: 2;
+        }
+
+        .game-tag {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-1);
+            padding: 6px 14px;
+            border-radius: 50px;
+            align-self: flex-start;
+            margin-bottom: 14px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .play-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 15px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-card:hover .play-btn {
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+            border-color: transparent;
+            box-shadow: 0 10px 25px rgba(0, 240, 255, 0.4);
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Card for adding more games */
+        .add-game-card {
+            background: rgba(10, 20, 40, 0.3);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 40px;
+            min-height: 390px;
+            box-shadow: none;
+        }
+
+        .add-game-card:hover {
+            border-color: rgba(0, 240, 255, 0.6);
+            background: rgba(0, 240, 255, 0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+        }
+
+        .add-game-card:hover::before {
+            opacity: 0;
+        }
+
+        .add-icon {
+            font-size: 3.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .add-game-card:hover .add-icon {
+            color: var(--accent-1);
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .add-text {
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.15rem;
+            transition: color 0.3s;
+        }
+
+        .add-game-card:hover .add-text {
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.95rem;
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(6, 9, 19, 0.8);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars" id="stars-container"></div>
+
+    <!-- Shooting Stars SVG overlay -->
+    <svg id="shooting-stars-canvas" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Layer 1: purple → cyan -->
+            <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#2EB9DF;stop-opacity:0" />
+                <stop offset="100%" style="stop-color:#9E00FF;stop-opacity:1" />
+            </linearGradient>
+            <!-- Layer 2: hot-pink → gold -->
+            <linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFB800;stop-opacity:0" />
+                <stop offset="100%" style="stop-color:#FF0099;stop-opacity:1" />
+            </linearGradient>
+            <!-- Layer 3: green → blue -->
+            <linearGradient id="sg3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#00B8FF;stop-opacity:0" />
+                <stop offset="100%" style="stop-color:#00FF9E;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <!-- Shooting star rects will be managed by JS -->
+        <rect id="sstar1" style="display:none" />
+        <rect id="sstar2" style="display:none" />
+        <rect id="sstar3" style="display:none" />
+    </svg>
+
+    <!-- UFO floating decoration -->
+    <img src="images/ufo.png" class="deco-ufo" alt="UFO" loading="lazy">
+
+    <header>
+        <div class="logo-container">
+            <span class="logo-icon">🌌</span>
+            <div class="logo">Universo Evolucione</div>
+        </div>
+        <div class="game-count">🕹️ 11 JUEGOS</div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <!-- Floating planet decoration -->
+            <img src="images/planet.png" class="hero-planet" alt="" aria-hidden="true" loading="lazy">
+            <h1>Bienvenido al <br><span>Universo Evolucione</span></h1>
+            <p>Explora un catálogo en expansión de juegos web desafiantes. Pon a prueba tus habilidades, memoria,
+                cálculo y
+                reflejos en esta experiencia inmersiva.</p>
+        </div>
+        <!-- Floating astronaut right side -->
+        <img src="images/astronaut-floating.png" class="hero-astronaut" alt="Astronauta" loading="lazy">
+    </section>
+
+    <div class="games-container">
+
+        <!-- Game 1 -->
+        <a href="encuentra-el-numero.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #1565c0 0%, #00d2ff 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -20px; bottom: -20px; opacity: 0.9;">
+                    🔢</div>
+                <div class="abstract-shape"
+                    style="font-size: 3rem; position: absolute; filter: blur(2px); opacity: 0.5; left: 10px; top: 10px;">
+                    👁️</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag">Agilidad Mental</span>
+                <h3 class="game-title">Encuentra el Número</h3>
+                <p class="game-desc">Localiza el número indicado en una cuadrícula que crece en dificultad. Tienes 60
+                    segundos.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 2 -->
+        <a href="matriz-de-memoria.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #7000ff 0%, #ff007f 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -30px; opacity: 0.9;">
+                    🧩</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 20px;">
+                    🧠</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(245, 168, 0, 0.15); color: #f5a800;">Memoria
+                    Visual</span>
+                <h3 class="game-title">Matriz de Memoria</h3>
+                <p class="game-desc">Recuerda qué celdas se iluminan y repite el patrón en la cuadrícula. Varios niveles
+                    de dificultad.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 3 -->
+        <a href="matriz-numeros.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #f5a800 0%, #ff5e00 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -20px; opacity: 0.9;">
+                    🔢</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    ⏱️</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag"
+                    style="background: rgba(41, 121, 216, 0.15); color: #2979d8;">Concentración</span>
+                <h3 class="game-title">Matriz: Números</h3>
+                <p class="game-desc">Recuerda los números que aparecen brevemente y tócalos en orden ascendente (1, 2,
+                    3...).</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 4 -->
+        <a href="tabla-schulte.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #1565c0 0%, #4caf50 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -20px; opacity: 0.9;">
+                    👁️</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    ⏱️</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(76, 175, 80, 0.15); color: #4caf50;">Agilidad
+                    Visual</span>
+                <h3 class="game-title">Tabla Schulte</h3>
+                <p class="game-desc">Encuentra los números en la cuadrícula de madera en orden ascendente lo más rápido
+                    posible.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 5 -->
+        <a href="adicion.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #e53935 0%, #ff9800 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -20px; opacity: 0.9;">
+                    ➕</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    🧠</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(229, 57, 53, 0.15); color: #ef5350;">Cálculo
+                    Mental</span>
+                <h3 class="game-title">Suma</h3>
+                <p class="game-desc">Calcula la expresión rápida y selecciona la respuesta correcta antes de que se
+                    acabe el tiempo.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 6 -->
+        <a href="resta.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #0a1f5c 0%, #e53935 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -30px; opacity: 0.9;">
+                    ➖</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    🧠</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(229, 57, 53, 0.15); color: #ef5350;">Cálculo
+                    Mental</span>
+                <h3 class="game-title">Resta</h3>
+                <p class="game-desc">El clásico desafío de restas rápidas. Calcula la expresión y elige la opción que
+                    corresponde.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 7 -->
+        <a href="multiplicacion.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #4a148c 0%, #ab47bc 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -30px; opacity: 0.9;">
+                    ✖️</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    🧠</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(171, 71, 188, 0.15); color: #ab47bc;">Cálculo
+                    Mental</span>
+                <h3 class="game-title">Multiplicación</h3>
+                <p class="game-desc">Pon a prueba tus tablas de multiplicar. Resuelve la operación y selecciona el
+                    producto correcto a tiempo.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 8 -->
+        <a href="division.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #00838f 0%, #00bcd4 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -30px; opacity: 0.9;">
+                    ➗</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    🧠</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(0, 188, 212, 0.15); color: #00bcd4;">Cálculo
+                    Mental</span>
+                <h3 class="game-title">División</h3>
+                <p class="game-desc">Divide y selecciona el cociente correcto. Desafía tu velocidad mental en cada
+                    nivel.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 9 -->
+        <a href="encuentra-figura.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #0a2a6e 0%, #1a4abf 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -30px; opacity: 0.9;">
+                    🔍</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    👁️</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(26, 74, 191, 0.15); color: #2979d8;">Atención
+                    Visual</span>
+                <h3 class="game-title">Encuentra la Figura</h3>
+                <p class="game-desc">Localiza el ícono indicado en la cuadrícula lo más rápido que puedas antes de que
+                    acabe el tiempo.</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 10 -->
+        <a href="el-intruso.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #1565c0 0%, #0a237a 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -20px; opacity: 0.9;">
+                    🕵️</div>
+                <div class="abstract-shape"
+                    style="font-size: 2.5rem; position: absolute; filter: blur(2px); opacity: 0.6; left: 20px; top: 15px;">
+                    👁️</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(21, 101, 192, 0.15); color: #2979d8;">Atención
+                    Visual</span>
+                <h3 class="game-title">El Intruso</h3>
+                <p class="game-desc">Todos los íconos aparecen en pareja… excepto uno. ¡Encuéntralo antes de que se
+                    acabe el tiempo!</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Game 11 -->
+        <a href="memorama.html" class="game-card">
+            <div class="game-banner" style="background: linear-gradient(135deg, #1e3a5f 0%, #121c38 100%);">
+                <div class="abstract-shape"
+                    style="font-size: 6rem; position: absolute; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); right: -10px; bottom: -20px; opacity: 0.9;">
+                    🃏</div>
+            </div>
+            <div class="game-info">
+                <span class="game-tag" style="background: rgba(74, 122, 181, 0.15); color: #4a7ab5;">Memoria</span>
+                <h3 class="game-title">Memorama</h3>
+                <p class="game-desc">Encuentra todas las parejas y limpia tableros antes de que se acabe el tiempo.
+                    ¡Sube de nivel!</p>
+                <div class="play-btn">JUGAR AHORA</div>
+            </div>
+        </a>
+
+        <!-- Placeholder for Next Game -->
+        <div class="game-card add-game-card">
+            <img src="images/astronaut-moon.png" alt="Próximamente"
+                style="width:180px;margin-bottom:16px;filter:drop-shadow(0 10px 30px rgba(0,0,0,0.5));" />
+            <div class="add-text">Próximamente...<br><span
+                    style="font-size:0.85rem;font-weight:400;margin-top:8px;display:block;">Nuevos juegos en
+                    desarrollo</span></div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© Arcade Hub. Creado para jugar y divertirse.</p>
+    </footer>
+
+    <script>
+        /* ─────────────────────────────────────────────
+           Background twinkling stars
+        ───────────────────────────────────────────── */
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            if (!container) return;
+            const starCount = 150;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 4 + 2;
+                const opacity = Math.random() * 0.8 + 0.2;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.setProperty('--d', `${duration}s`);
+                star.style.opacity = opacity;
+                container.appendChild(star);
+            }
+        }
+
+        /* ─────────────────────────────────────────────
+           Shooting Stars  (ported from React component)
+        ───────────────────────────────────────────── */
+        function getRandomStartPoint() {
+            const side = Math.floor(Math.random() * 4);
+            const W = window.innerWidth;
+            const H = window.innerHeight;
+            const offset = Math.random() * Math.max(W, H);
+            switch (side) {
+                case 0: return { x: Math.random() * W, y: 0, angle: 45 };
+                case 1: return { x: W, y: Math.random() * H, angle: 135 };
+                case 2: return { x: Math.random() * W, y: H, angle: 225 };
+                case 3: return { x: 0, y: Math.random() * H, angle: 315 };
+                default: return { x: 0, y: 0, angle: 45 };
+            }
+        }
+
+        /**
+         * Launches one independent shooting-star layer.
+         * @param {string} rectId       – id of the <rect> element
+         * @param {string} gradientId   – id of the <linearGradient> to use
+         * @param {object} opts         – { minSpeed, maxSpeed, minDelay, maxDelay, starWidth, starHeight }
+         */
+        function initShootingStarLayer(rectId, gradientId, opts) {
+            const rect = document.getElementById(rectId);
+            if (!rect) return;
+
+            const {
+                minSpeed = 10, maxSpeed = 30,
+                minDelay = 1200, maxDelay = 4200,
+                starWidth = 10, starHeight = 1
+            } = opts;
+
+            let star = null;           // current star state
+            let rafId = null;          // animation frame handle
+            let timeoutId = null;      // next-spawn timeout handle
+
+            function spawnStar() {
+                const { x, y, angle } = getRandomStartPoint();
+                star = {
+                    x, y, angle,
+                    speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
+                    distance: 0,
+                    scale: 1
+                };
+                // kick off movement
+                if (rafId) cancelAnimationFrame(rafId);
+                animate();
+            }
+
+            function scheduleNext() {
+                const delay = Math.random() * (maxDelay - minDelay) + minDelay;
+                timeoutId = setTimeout(spawnStar, delay);
+            }
+
+            function animate() {
+                if (!star) { rect.style.display = 'none'; scheduleNext(); return; }
+
+                const rad = (star.angle * Math.PI) / 180;
+                star.x += star.speed * Math.cos(rad);
+                star.y += star.speed * Math.sin(rad);
+                star.distance += star.speed;
+                star.scale = 1 + star.distance / 100;
+
+                const W = window.innerWidth;
+                const H = window.innerHeight;
+
+                // Out of bounds → hide & schedule next
+                if (star.x < -20 || star.x > W + 20 || star.y < -20 || star.y > H + 20) {
+                    rect.style.display = 'none';
+                    star = null;
+                    scheduleNext();
+                    return;
+                }
+
+                const w = starWidth * star.scale;
+                const cx = star.x + w / 2;
+                const cy = star.y + starHeight / 2;
+
+                rect.setAttribute('x', star.x);
+                rect.setAttribute('y', star.y);
+                rect.setAttribute('width', w);
+                rect.setAttribute('height', starHeight);
+                rect.setAttribute('fill', `url(#${gradientId})`);
+                rect.setAttribute('transform', `rotate(${star.angle},${cx},${cy})`);
+                rect.style.display = '';
+
+                rafId = requestAnimationFrame(animate);
+            }
+
+            // Initial spawn
+            scheduleNext();
+        }
+
+        /* ─────────────────────────────────────────────
+           Boot everything on DOMContentLoaded
+        ───────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', function () {
+            createStars();
+
+            // Layer 1 – purple / cyan  (matches demo layer 1)
+            initShootingStarLayer('sstar1', 'sg1', {
+                minSpeed: 15, maxSpeed: 35,
+                minDelay: 1000, maxDelay: 3000,
+                starWidth: 10, starHeight: 1
+            });
+
+            // Layer 2 – hot-pink / gold  (matches demo layer 2)
+            initShootingStarLayer('sstar2', 'sg2', {
+                minSpeed: 10, maxSpeed: 25,
+                minDelay: 2000, maxDelay: 4000,
+                starWidth: 10, starHeight: 1
+            });
+
+            // Layer 3 – green / blue  (matches demo layer 3)
+            initShootingStarLayer('sstar3', 'sg3', {
+                minSpeed: 20, maxSpeed: 40,
+                minDelay: 1500, maxDelay: 3500,
+                starWidth: 10, starHeight: 1
+            });
+        });
+    </script>
+</body>
+
+</html>

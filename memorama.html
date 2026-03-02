@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorama 🃏</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            background: radial-gradient(ellipse at top, #1a2a6c, #0a1628 70%);
+            min-height: 100vh;
+            font-family: 'Nunito', sans-serif;
+            color: #e0e8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 16px;
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .screen.active {
+            display: flex
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 6vw, 3rem);
+            color: #fbbf24;
+            text-shadow: 0 0 30px rgba(251, 191, 36, .5);
+            text-align: center;
+        }
+
+        .game-subtitle {
+            font-size: .93rem;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.7
+        }
+
+        .btn {
+            padding: 13px 34px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: .93rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #1a1a2e
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 20px rgba(245, 158, 11, .5)
+        }
+
+        .btn-primary:active {
+            transform: scale(.97)
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, .08);
+            color: #e0e8ff;
+            border: 2px solid rgba(255, 255, 255, .2);
+            text-decoration: none;
+        }
+
+        .score-box {
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .13);
+            border-radius: 16px;
+            padding: 13px 24px;
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: .75rem;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            text-transform: uppercase
+        }
+
+        .score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: #fbbf24;
+            margin-top: 2px
+        }
+
+        /* ─── HUD ─── */
+        #hud {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .hud-item {
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 12px;
+            padding: 6px 13px;
+            text-align: center;
+            min-width: 68px;
+        }
+
+        .hud-label {
+            font-size: .62rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px
+        }
+
+        .hud-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: #e0e8ff
+        }
+
+        /* ─── TIMER RING ─── */
+        #timer-wrap {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0
+        }
+
+        #timer-svg {
+            width: 70px;
+            height: 70px;
+            transform: rotate(-90deg)
+        }
+
+        #timer-bg {
+            fill: none;
+            stroke: #1e3a5f;
+            stroke-width: 6
+        }
+
+        #timer-fg {
+            fill: none;
+            stroke: #fbbf24;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke .5s;
+        }
+
+        #timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        #timer-lbl {
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: .55rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            white-space: nowrap;
+        }
+
+        /* ─── LEVEL AREA ─── */
+        #level-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px
+        }
+
+        #level-badge {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 50px;
+            padding: 5px 14px;
+        }
+
+        #level-badge-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: .78rem;
+            color: #fbbf24
+        }
+
+        #level-dots {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 130px
+        }
+
+        .ldot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #1e3a5f;
+            transition: background .3s
+        }
+
+        .ldot.done {
+            background: #4a7ab5
+        }
+
+        .ldot.current {
+            background: #fbbf24;
+            box-shadow: 0 0 6px #fbbf24
+        }
+
+        /* ─── BOARD ─── */
+        #board-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%
+        }
+
+        #board {
+            display: grid;
+            gap: 7px
+        }
+
+        #pairs-left {
+            font-size: .78rem;
+            color: #64748b;
+            letter-spacing: .5px
+        }
+
+        /* ─── CARDS ─── */
+        .card-wrapper {
+            perspective: 700px
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform .4s cubic-bezier(.4, 0, .2, 1);
+            cursor: pointer;
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg)
+        }
+
+        .card-wrapper.matched-wrap {
+            pointer-events: none
+        }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* face-down */
+        .card-pattern {
+            background:
+                repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(74, 122, 181, .11) 8px, rgba(74, 122, 181, .11) 9px),
+                linear-gradient(145deg, #192854, #121c38);
+            border: 2px solid #2a4a8a;
+        }
+
+        .card-back-sym {
+            color: rgba(100, 150, 220, .3);
+            font-size: 1.3em
+        }
+
+        /* face-up */
+        .card-icon {
+            background: linear-gradient(145deg, #0e1f3d, #122140);
+            border: 2px solid #fbbf24;
+            transform: rotateY(180deg);
+        }
+
+        .card-icon.matched {
+            background: linear-gradient(145deg, #082616, #0c3018);
+            border-color: #34d399;
+            box-shadow: 0 0 10px rgba(52, 211, 153, .35);
+        }
+
+        .card-icon.wrong-flash {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 10px rgba(239, 68, 68, .5) !important;
+            animation: wrongFlash .55s ease;
+        }
+
+        @keyframes wrongFlash {
+
+            0%,
+            100% {
+                border-color: #ef4444
+            }
+
+            50% {
+                border-color: #fca5a5
+            }
+        }
+
+        .card-wrapper:not(.matched-wrap):hover .card-inner:not(.flipped) {
+            filter: brightness(1.3)
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes matchPop {
+            0% {
+                transform: rotateY(180deg) scale(1)
+            }
+
+            50% {
+                transform: rotateY(180deg) scale(1.18)
+            }
+
+            100% {
+                transform: rotateY(180deg) scale(1)
+            }
+        }
+
+        .card-inner.match-anim {
+            animation: matchPop .35s ease
+        }
+
+        @keyframes deltaFloat {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(0)
+            }
+
+            15% {
+                opacity: 1
+            }
+
+            70% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-28px)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-50px)
+            }
+        }
+
+        #level-delta {
+            position: fixed;
+            top: 28%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            padding: 8px 20px;
+            border-radius: 50px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        }
+
+        #level-delta.show-up {
+            color: #34d399;
+            background: rgba(52, 211, 153, .12);
+            border: 2px solid #34d399;
+            animation: deltaFloat 1.6s forwards
+        }
+
+        #level-delta.show-down {
+            color: #f87171;
+            background: rgba(248, 113, 113, .12);
+            border: 2px solid #f87171;
+            animation: deltaFloat 1.6s forwards
+        }
+
+        @keyframes boardWin {
+
+            0%,
+            100% {
+                filter: brightness(1)
+            }
+
+            50% {
+                filter: brightness(1.5) saturate(1.4)
+            }
+        }
+
+        #board.win-anim {
+            animation: boardWin .45s ease 2
+        }
+
+        /* "next board" flash */
+        @keyframes nextFlash {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(.8)
+            }
+
+            30% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            80% {
+                opacity: 1
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.05)
+            }
+        }
+
+        #next-msg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            color: #fbbf24;
+            background: rgba(10, 22, 40, .9);
+            border: 2px solid #fbbf24;
+            border-radius: 16px;
+            padding: 12px 28px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 200;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        #next-msg.show {
+            animation: nextFlash 1s forwards
+        }
+
+        #music-btn {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        #grid-label {
+            font-size: .7rem;
+            color: #4a7ab5;
+            letter-spacing: 1.5px;
+            text-transform: uppercase
+        }
+
+        /* ─── TIME PICKER ─── */
+        .time-picker {
+            display: flex;
+            gap: 10px;
+            justify-content: center
+        }
+
+        .time-btn {
+            padding: 11px 22px;
+            border: 2px solid rgba(255, 255, 255, .18);
+            border-radius: 50px;
+            background: rgba(255, 255, 255, .06);
+            color: #94a3b8;
+            font-family: 'Orbitron', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            letter-spacing: 1px;
+        }
+
+        .time-btn:hover {
+            border-color: #fbbf24;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, .08)
+        }
+
+        .time-btn.selected {
+            background: rgba(251, 191, 36, .15);
+            border-color: #fbbf24;
+            color: #fbbf24;
+            box-shadow: 0 0 14px rgba(251, 191, 36, .28);
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="music-btn">🎵</button>
+    <div id="level-delta"></div>
+    <div id="next-msg"></div>
+
+    <!-- ═══ START ═══ -->
+    <div id="start-screen" class="screen active">
+        <div class="game-title">🃏 Memorama</div>
+        <div class="game-subtitle">
+            Encuentra todas las parejas y limpia tableros<br>
+            ¡Sube de nivel antes de que se acabe el tiempo!
+        </div>
+
+        <div class="score-box">
+            <div class="score-label">🏆 Mejor Puntaje</div>
+            <div class="score-value" id="hs-display">0</div>
+        </div>
+
+        <div style="text-align:center">
+            <div style="font-size:.72rem;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⏱
+                Elige el tiempo</div>
+            <div class="time-picker">
+                <button class="time-btn selected" data-time="60">1 MIN</button>
+                <button class="time-btn" data-time="120">2 MIN</button>
+                <button class="time-btn" data-time="180">3 MIN</button>
+            </div>
+        </div>
+
+        <div class="score-box" style="width:100%;max-width:300px">
+            <div style="font-size:.83rem;color:#94a3b8;line-height:1.8;text-align:center">
+                ✦ 12 niveles — tableros de 2×2 a 4×4<br>
+                ✦ Iconos más difíciles en niveles altos
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+            <button class="btn btn-primary" id="btn-start">▶ JUGAR</button>
+            <a href="index.html" class="btn btn-secondary">🏠 VOLVER AL ARCADE</a>
+        </div>
+    </div>
+
+    <!-- ═══ GAME ═══ -->
+    <div id="game-screen" class="screen">
+        <div id="hud">
+            <div id="timer-wrap">
+                <svg id="timer-svg" viewBox="0 0 70 70">
+                    <circle id="timer-bg" cx="35" cy="35" r="28" />
+                    <circle id="timer-fg" cx="35" cy="35" r="28" />
+                </svg>
+                <div id="timer-text">60</div>
+                <div id="timer-lbl">seg</div>
+            </div>
+
+            <div class="hud-item">
+                <div class="hud-label">Puntos</div>
+                <div class="hud-value" id="score-display">0</div>
+            </div>
+
+            <div class="hud-item">
+                <div class="hud-label">Tableros</div>
+                <div class="hud-value" id="boards-display">0</div>
+            </div>
+
+            <div id="level-area">
+                <div id="level-badge">
+                    <div id="level-badge-text">NIVEL 1</div>
+                </div>
+                <div id="level-dots"></div>
+            </div>
+        </div>
+
+        <div id="board-wrap">
+            <div id="grid-label"></div>
+            <div id="pairs-left"></div>
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <!-- ═══ GAME OVER ═══ -->
+    <div id="over-screen" class="screen">
+        <div class="game-title" id="over-title">⏰ ¡Tiempo!</div>
+        <div class="game-subtitle" id="over-msg"></div>
+
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+            <div class="score-box">
+                <div class="score-label">Puntaje</div>
+                <div class="score-value" id="final-score">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">🏆 Récord</div>
+                <div class="score-value" id="final-hs">0</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+            <div class="score-box">
+                <div class="score-label">Tableros</div>
+                <div class="score-value" id="final-boards">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">Errores</div>
+                <div class="score-value" id="final-miss">0</div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+            <button class="btn btn-primary" id="btn-retry">↺ JUGAR DE NUEVO</button>
+            <button class="btn btn-secondary" id="btn-menu">☰ MENÚ DE MEMORAMA</button>
+            <a href="index.html" class="btn btn-secondary">🏠 ARCADE</a>
+        </div>
+    </div>
+
+    <script>
+        /* ════════════════════════════════════════════
+           CONSTANTS
+        ════════════════════════════════════════════ */
+        const POOLS = {
+            t1: ['🐶', '🐱', '🦊', '🐸', '🐧', '🐮', '🐷', '🦋', '🦄', '🦀', '🐠', '🦆', '🦉', '🐝', '🦜', '🐊', '🦁', '🐯', '🦓', '🐘'],
+            t2: ['🍎', '🍊', '🍋', '🍇', '🍓', '🍕', '🍔', '🌮', '🍦', '🎂', '🍩', '🍣', '🥕', '🌽', '🍄', '🧁', '🍰', '🥑', '🍉', '🍍'],
+            t3: ['⭐', '🌙', '☀️', '🌈', '❄️', '🎯', '🏆', '🎱', '💎', '🔮', '🚀', '🎸', '🎨', '🏈', '⚽', '🏀', '🎾', '🎹', '🎭', '🎪'],
+            t4: ['🌸', '🌺', '🌻', '🌹', '🌷', '🍀', '🌴', '🍁', '🌵', '🍃', '🌿', '🍂', '🌾', '🌊', '🌋', '🌀', '🌑', '🌕', '💮', '🪷'],
+        };
+
+        const LEVELS = [
+            { rows: 2, cols: 2, pairs: 2, tier: ['t1'], label: '2×2' },
+            { rows: 2, cols: 3, pairs: 3, tier: ['t1'], label: '2×3' },
+            { rows: 2, cols: 4, pairs: 4, tier: ['t1'], label: '2×4' },
+            { rows: 3, cols: 4, pairs: 6, tier: ['t1'], label: '3×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t1', 't2'], label: '4×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t1', 't2'], label: '4×4' },
+            { rows: 2, cols: 4, pairs: 4, tier: ['t2', 't3'], label: '2×4' },
+            { rows: 3, cols: 4, pairs: 6, tier: ['t2', 't3'], label: '3×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t2', 't3'], label: '4×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t3', 't4'], label: '4×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t4'], label: '4×4' },
+            { rows: 4, cols: 4, pairs: 8, tier: ['t4'], label: '4×4' },
+        ];
+
+        const MAX_LV = LEVELS.length;
+        const HS_KEY = 'memo_hs';
+        let GAME_TIME = 60;
+        const CIRC = 2 * Math.PI * 28; // r=28
+
+        /* ════════════════════════════════════════════
+           AUDIO — Marimba / Music Box style
+        ════════════════════════════════════════════ */
+        let ctx = null, musicOn = true, musicTid = null;
+
+        const getCtx = () => {
+            if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (ctx.state === 'suspended') ctx.resume();
+            return ctx;
+        };
+
+        /* Marimba tone: sine with instant attack + bright overtone transient */
+        const mb = (freq, dur, vol, t) => {
+            const c = getCtx();
+            const o = c.createOscillator(), g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.type = 'sine'; o.frequency.value = freq;
+            g.gain.setValueAtTime(vol, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            o.start(t); o.stop(t + dur + 0.05);
+            // Short bright overtone gives the "bong" attack
+            const o2 = c.createOscillator(), g2 = c.createGain();
+            o2.connect(g2); g2.connect(c.destination);
+            o2.type = 'sine'; o2.frequency.value = freq * 4;
+            g2.gain.setValueAtTime(vol * 0.07, t);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+            o2.start(t); o2.stop(t + 0.1);
+        };
+
+        /* Warm bass (triangle) */
+        const bass = (freq, dur, vol, t) => {
+            const c = getCtx(), o = c.createOscillator(), g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.type = 'triangle'; o.frequency.value = freq;
+            g.gain.setValueAtTime(vol, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            o.start(t); o.stop(t + dur + 0.05);
+        };
+
+        /* Light shaker */
+        const shaker = t => {
+            const c = getCtx(), dur = 0.04;
+            const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            const s = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter();
+            f.type = 'highpass'; f.frequency.value = 9000;
+            s.buffer = buf; s.connect(f); f.connect(g); g.connect(c.destination);
+            g.gain.setValueAtTime(0.022, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            s.start(t);
+        };
+
+        /* C major scale (high register) */
+        const CM = [523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.5];
+        //  idx:   0       1       2       3       4      5    6       7
+        //         C5      D5      E5      F5      G5      A5   B5      C6
+
+        const BPM_M = 112, BT = 60 / BPM_M;
+
+        /* 16-beat bar — cheerful music-box melody */
+        const MEL_M = [
+            [0, 0, 1, .20], [1, 2, 1, .18], [2, 4, 1, .20], [3, 2, 1, .18],
+            [4, 5, 2, .22], [6, 4, 1, .20], [7, 2, 1, .16],
+            [8, 3, 1, .18], [9, 1, 1, .16], [10, 2, 2, .20],
+            [12, 4, 1, .18], [13, 5, 1, .20], [14, 7, 2, .22],
+        ];
+        /* Slower harmony layer */
+        const HAR_M = [
+            [0, 0, 4, .07], [4, 5, 4, .07], [8, 3, 4, .07], [12, 4, 4, .07],
+        ];
+        /* Walking bass */
+        const BAS_M = [
+            [0, 130.81, 2, .12], [2, 196.00, 2, .09],
+            [4, 174.61, 2, .10], [6, 196.00, 2, .09],
+            [8, 130.81, 2, .12], [10, 146.83, 2, .09],
+            [12, 164.81, 2, .10], [14, 196.00, 2, .11],
+        ];
+        /* Shaker on every other beat */
+        const SHK_M = [0, 2, 4, 6, 8, 10, 12, 14];
+
+        function schedBar(t0) {
+            if (!musicOn || !ctx) return;
+            const L = BT * 16;
+            MEL_M.forEach(([b, ni, dur, v]) => mb(CM[ni], dur * BT * .88, v, t0 + b * BT));
+            HAR_M.forEach(([b, ni, dur, v]) => mb(CM[ni], dur * BT * .82, v * .9, t0 + b * BT));
+            BAS_M.forEach(([b, hz, dur, v]) => bass(hz, dur * BT * .85, v, t0 + b * BT));
+            SHK_M.forEach(b => shaker(t0 + b * BT));
+            musicTid = setTimeout(() => schedBar(t0 + L), (L - .25) * 1000);
+        }
+
+        const startMusic = () => { if (!musicOn) return; getCtx(); if (musicTid) clearTimeout(musicTid); schedBar(ctx.currentTime + .1); };
+        const stopMusic = () => { if (musicTid) clearTimeout(musicTid); musicTid = null; };
+
+        /* SFX — all marimba-flavoured */
+        const sfxFlip = () => { const c = getCtx(), t = c.currentTime; mb(1046.5, .07, .11, t); };
+        const sfxMatch = () => { const c = getCtx(), t = c.currentTime;[523.25, 659.25, 783.99].forEach((f, i) => mb(f, .14, .13, t + i * .07)); };
+        const sfxWrong = () => { const c = getCtx(), t = c.currentTime; mb(329.63, .17, .10, t); mb(261.63, .22, .08, t + .13); };
+        const sfxWin = () => { const c = getCtx(), t = c.currentTime;[523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.5].forEach((f, i) => mb(f, .17, .14, t + i * .075)); };
+        const sfxLevelUp = () => { const c = getCtx(), t = c.currentTime;[659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => mb(f, .13, .13, t + i * .08)); };
+        const sfxLvDown = () => { const c = getCtx(), t = c.currentTime;[880, 783.99, 659.25, 523.25].forEach((f, i) => mb(f, .15, .10, t + i * .1)); };
+        const sfxOver = () => { const c = getCtx(), t = c.currentTime;[523.25, 493.88, 440, 392, 349.23].forEach((f, i) => mb(f, .24, .12, t + i * .17)); };
+
+        /* ════════════════════════════════════════════
+           STATE
+        ════════════════════════════════════════════ */
+        let level = 1, score = 0, mismatches = 0, boardsCleared = 0, boardErrors = 0;
+        let board = [], flippedIdx = [], matchedIdx = new Set();
+        let canFlip = true, gameActive = false;
+        let gameTimer = GAME_TIME, timerInterval = null;
+
+        /* ════════════════════════════════════════════
+           HELPERS
+        ════════════════════════════════════════════ */
+        const $ = id => document.getElementById(id);
+        const cfg = () => LEVELS[Math.min(level, MAX_LV) - 1];
+
+        function shuffle(a) {
+            for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; }
+            return a;
+        }
+        function getPool(tiers) { return shuffle([...new Set(tiers.flatMap(t => POOLS[t]))]); }
+        function showScreen(n) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(n + '-screen').classList.add('active'); }
+
+        /* ════════════════════════════════════════════
+           HUD
+        ════════════════════════════════════════════ */
+        function updateHUD() {
+            $('score-display').textContent = score;
+            $('boards-display').textContent = boardsCleared;
+            $('level-badge-text').textContent = `NIVEL ${level}`;
+            $('grid-label').textContent = cfg().label;
+            renderDots();
+            renderPairsLeft();
+        }
+        function renderDots() {
+            const el = $('level-dots'); el.innerHTML = '';
+            for (let i = 1; i <= MAX_LV; i++) {
+                const d = document.createElement('div');
+                d.className = 'ldot' + (i < level ? ' done' : '') + (i === level ? ' current' : '');
+                el.appendChild(d);
+            }
+        }
+        function renderPairsLeft() {
+            const rem = cfg().pairs - matchedIdx.size / 2;
+            $('pairs-left').textContent = `${rem} pareja${rem !== 1 ? 's' : ''} restante${rem !== 1 ? 's' : ''}`;
+        }
+        function showDelta(up) {
+            const el = $('level-delta');
+            el.className = ''; void el.offsetWidth;
+            el.textContent = up ? '⬆ NIVEL +1' : '⬇ nivel -1';
+            el.className = up ? 'show-up' : 'show-down';
+        }
+        function updateTimerUI() {
+            $('timer-text').textContent = gameTimer;
+            const frac = gameTimer / GAME_TIME;
+            const fg = $('timer-fg');
+            fg.style.strokeDashoffset = CIRC * (1 - frac);
+            fg.style.stroke = frac > .5 ? '#fbbf24' : frac > .25 ? '#f97316' : '#ef4444';
+        }
+
+        /* ════════════════════════════════════════════
+           BOARD
+        ════════════════════════════════════════════ */
+        function buildBoard() {
+            const c = cfg(), pool = getPool(c.tier);
+            return shuffle([...pool.slice(0, c.pairs), ...pool.slice(0, c.pairs)]);
+        }
+        function cardSize() {
+            const c = cfg();
+            const vw = Math.min(window.innerWidth - 26, 530);
+            const vh = window.innerHeight - 185;
+            const bw = Math.floor((vw - 7 * (c.cols - 1)) / c.cols);
+            const bh = Math.floor((vh - 7 * (c.rows - 1)) / c.rows);
+            return Math.min(bw, bh, 100);
+        }
+        function renderBoard() {
+            const c = cfg(), el = $('board'), sz = cardSize();
+            el.style.gridTemplateColumns = `repeat(${c.cols},${sz}px)`;
+            el.innerHTML = '';
+            board.forEach((icon, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'card-wrapper';
+                wrap.style.cssText = `width:${sz}px;height:${sz}px`;
+                wrap.id = `cw-${idx}`;
+
+                const inner = document.createElement('div');
+                inner.className = 'card-inner'; inner.id = `ci-${idx}`;
+
+                const pat = document.createElement('div');
+                pat.className = 'card-face card-pattern';
+                const sym = document.createElement('span');
+                sym.className = 'card-back-sym'; sym.textContent = '✦';
+                pat.appendChild(sym);
+
+                const ico = document.createElement('div');
+                ico.className = 'card-face card-icon';
+                ico.style.fontSize = Math.round(sz * .47) + 'px';
+                ico.id = `icon-${idx}`; ico.textContent = icon;
+
+                inner.appendChild(pat); inner.appendChild(ico);
+                wrap.appendChild(inner); el.appendChild(wrap);
+                wrap.addEventListener('click', () => handleFlip(idx));
+            });
+        }
+
+        /* ════════════════════════════════════════════
+           CARD LOGIC
+        ════════════════════════════════════════════ */
+        function handleFlip(idx) {
+            if (!gameActive || !canFlip) return;
+            if (matchedIdx.has(idx)) return;
+            if (flippedIdx.includes(idx)) return;
+            if (flippedIdx.length >= 2) return;
+            sfxFlip();
+            flippedIdx.push(idx);
+            $(`ci-${idx}`).classList.add('flipped');
+            if (flippedIdx.length === 2) { canFlip = false; setTimeout(checkPair, 820); }
+        }
+
+        function checkPair() {
+            const [a, b] = flippedIdx;
+            if (board[a] === board[b]) {
+                matchedIdx.add(a); matchedIdx.add(b);
+                score += 100;
+                sfxMatch();
+                [$(`ci-${a}`), $(`ci-${b}`)].forEach(ci => { if (!ci) return; ci.classList.add('match-anim'); setTimeout(() => ci.classList.remove('match-anim'), 360); });
+                [$(`icon-${a}`), $(`icon-${b}`)].forEach(ic => ic && ic.classList.add('matched'));
+                [$(`cw-${a}`), $(`cw-${b}`)].forEach(cw => cw && cw.classList.add('matched-wrap'));
+                flippedIdx = []; canFlip = true;
+                updateHUD();
+                if (matchedIdx.size === board.length) setTimeout(winBoard, 400);
+            } else {
+                mismatches++; boardErrors++;
+                score = Math.max(0, score - 10);
+                sfxWrong();
+                [$(`icon-${a}`), $(`icon-${b}`)].forEach(ic => { if (!ic) return; ic.classList.add('wrong-flash'); setTimeout(() => ic.classList.remove('wrong-flash'), 600); });
+                updateHUD();
+                setTimeout(() => { [$(`ci-${a}`), $(`ci-${b}`)].forEach(ci => ci && ci.classList.remove('flipped')); flippedIdx = []; canFlip = true; }, 700);
+            }
+        }
+
+        /* ════════════════════════════════════════════
+           WIN BOARD
+        ════════════════════════════════════════════ */
+        function winBoard() {
+            if (!gameActive) return;
+            // Perfect board bonus
+            if (boardErrors === 0) score += 50;
+            boardsCleared++;
+            sfxWin();
+            const boardEl = $('board');
+            boardEl.classList.add('win-anim');
+            setTimeout(() => boardEl.classList.remove('win-anim'), 900);
+
+            if (level < MAX_LV) { level++; sfxLevelUp(); showDelta(true); }
+            saveHS();
+
+            // Brief "next board" message — but keep timer running!
+            const nm = $('next-msg');
+            nm.textContent = `¡Tablero ${boardsCleared} completado!`;
+            nm.className = 'show';
+            setTimeout(() => { nm.className = ''; }, 1000);
+
+            // Start next board quickly (timer keeps running)
+            setTimeout(startRound, 1100);
+        }
+
+        /* ════════════════════════════════════════════
+           GAME OVER
+        ════════════════════════════════════════════ */
+        function gameOver() {
+            clearInterval(timerInterval); timerInterval = null;
+            gameActive = false; stopMusic();
+            sfxOver();
+            saveHS();
+            $('over-title').textContent = boardsCleared === 0 ? '⏰ ¡Se acabó!' : '⏰ ¡Tiempo!';
+            $('over-msg').textContent = boardsCleared === 0
+                ? 'No lograste completar ningún tablero'
+                : `Completaste ${boardsCleared} tablero${boardsCleared !== 1 ? 's' : ''} · nivel ${level}`;
+            $('final-score').textContent = score;
+            $('final-hs').textContent = localStorage.getItem(HS_KEY) || 0;
+            $('final-boards').textContent = boardsCleared;
+            $('final-miss').textContent = mismatches;
+            setTimeout(() => showScreen('over'), 900);
+        }
+
+        const saveHS = () => {
+            const hs = parseInt(localStorage.getItem(HS_KEY) || 0);
+            if (score > hs) localStorage.setItem(HS_KEY, score);
+        };
+
+        /* ════════════════════════════════════════════
+           GLOBAL TIMER (60 seconds total)
+        ════════════════════════════════════════════ */
+        function startGameTimer() {
+            clearInterval(timerInterval);
+            gameTimer = GAME_TIME;
+            updateTimerUI();
+            timerInterval = setInterval(() => {
+                gameTimer--;
+                updateTimerUI();
+                if (gameTimer <= 10) sfxFlip(); // subtle tick on last 10s
+                if (gameTimer <= 0) { clearInterval(timerInterval); timerInterval = null; gameOver(); }
+            }, 1000);
+        }
+
+        /* ════════════════════════════════════════════
+           ROUND
+        ════════════════════════════════════════════ */
+        function startRound() {
+            if (!gameActive) return;
+            matchedIdx.clear(); flippedIdx = []; canFlip = true; boardErrors = 0;
+            board = buildBoard();
+            renderBoard(); updateHUD();
+        }
+
+        function startGame() {
+            score = 0; mismatches = 0; boardsCleared = 0; boardErrors = 0; level = 1; gameActive = true;
+            showScreen('game');
+            startMusic();
+            startGameTimer(); // single 60s countdown
+            startRound();
+        }
+
+        /* ════════════════════════════════════════════
+           INIT
+        ════════════════════════════════════════════ */
+        (() => {
+            const fg = $('timer-fg');
+            fg.style.strokeDasharray = CIRC;
+            fg.style.strokeDashoffset = CIRC;
+
+            $('hs-display').textContent = localStorage.getItem(HS_KEY) || 0;
+
+            // Time picker
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    GAME_TIME = parseInt(btn.dataset.time);
+                });
+            });
+
+            $('btn-start').addEventListener('click', () => { getCtx(); startGame(); });
+            $('btn-retry').addEventListener('click', () => { getCtx(); startGame(); });
+            $('btn-menu').addEventListener('click', () => { $('hs-display').textContent = localStorage.getItem(HS_KEY) || 0; showScreen('start'); });
+
+            $('music-btn').addEventListener('click', () => {
+                musicOn = !musicOn;
+                $('music-btn').textContent = musicOn ? '🎵' : '🔇';
+                if (musicOn && gameActive) startMusic(); else stopMusic();
+            });
+        })();
+    </script>
+</body>
+
+</html>
